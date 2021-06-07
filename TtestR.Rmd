@@ -1,0 +1,75 @@
+---
+title: "Ttest_LinearRegression"
+author: "Jeff Grayum"
+date: "6/7/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(gapminder)
+library(tidyverse)
+```
+
+
+```{r}
+data("gapminder") #Not necessary, but now this dataset is visible under "Environment", to the right.  Easy to search!
+
+#Remember, it's good to look at a summary of our data before beginning!! Easy step to forget.
+summary(gapminder)
+
+x <- mean(gapminder$gdpPercap)
+
+#Cool trick for quickly looking at data!!  Try attach() (remember to detach!)
+attach(gapminder)
+median(pop)
+hist(lifeExp)
+hist(pop)
+hist(log(pop))
+boxplot(lifeExp ~ continent)
+plot(lifeExp ~ log(gdpPercap))
+detach(gapminder)
+```
+
+Making a dataframe, running our t-test.
+```{r}
+gapminder %>%
+  select(country, lifeExp) %>%
+  filter(country == "South Africa" |
+           country == "Ireland") %>%
+  group_by(country) %>%
+  summarize(ave_life = mean(lifeExp)) 
+
+gapminder %>%
+  select(country, lifeExp) %>%
+  filter(country %in% c("South Africa", "Ireland")) %>%
+  group_by(country) %>%
+  summarize(ave_life = mean(lifeExp)) 
+
+#But is the difference in lifeExp statistically significant?  Run a T-Test to find out! (Remember, we're often making inferences from SAMPLES)
+#Difference could be real, or due to chance.  We start off by assuming that we are wrong (null hypothesis...if correct, differences due to chance). --> Ttest, prodeces p-value (probality that null hypothesis is correct).  If p < 0.05, we can reject the null hypothesis!! Gives us 95% confidence interval. p-value is probablity that observed differences are just due to chance.
+
+
+df1 <-gapminder %>%
+  select(country, lifeExp) %>%
+  filter(country == "South Africa" |
+           country == "Ireland") 
+
+t.test(data = df1, lifeExp ~ country)
+```
+
+Some ggplot2 stuff.
+```{r}
+gapminder %>%
+  filter(gdpPercap < 50000) %>%
+  ggplot(aes(log(gdpPercap), lifeExp, color = year, size = pop)) +
+  geom_point(alpha = 0.35) +
+  geom_smooth(method = lm) +
+  facet_wrap(~ continent)
+```
+
